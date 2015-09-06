@@ -6,7 +6,6 @@
 static unsigned char* ip;
 static uint64_t* sp;
 
-// todo: relocations are failing if these are not static
 static void cmd_write()
 {
 	uint64_t sys_write = __NR_write;
@@ -183,7 +182,6 @@ long start(void** stack) {
 		case AT_NULL:
 			finished = 1;
 			break;
-		// phdr is sometimes my own phdr?! Oo
 		case AT_PHDR:
 			phdr = (Elf64_Phdr*)auxv->a_un.a_val;
 			break;

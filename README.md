@@ -1,4 +1,4 @@
-# amd64-bf: Brainfuck for your systems programming needs
+# amd64-bf: Brainfuck for systems programmers
 
 This is an extension of brainfuck to facilitate system programming.
 It includes a link editor, `bold`, and a dynamic loader, `ld-bf.so`.
@@ -32,7 +32,6 @@ Command reference:
 
 # FAQ
 
-
 ### Q: Why not just use a compiler?
 
 A: After compiling, we are left with assembler which is hard to read for 
@@ -43,7 +42,7 @@ A: After compiling, we are left with assembler which is hard to read for
 
 A: By reusing library code, bugs and bad design choices made by the library implementer are
    propagated into user code. The only way to ensure bug-free and maintainable code is
-   to rewrite everything from scratch.
+   to write everything from scratch.
 
 ### Q: What are the benefits of having a dynamic loader that doesn't do relocations and works completely statically?
 
@@ -59,7 +58,9 @@ A: Please, take a look at this picture of a cute kitten:
 
 * Thread-local storage isn't properly implemented (yet?)
 
-* 
+* `bold` should probably support a `-static` flag. Or any flag at all.
+
+* An `install` target is still missing. An autotools-based configury seems like a good match ;)
 
 * I will be very impressed if someone manages to write a program that
-  properly daemonizes and accepts incoming connections.
+  properly daemonizes and accepts incoming connections on a socket.

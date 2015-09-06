@@ -33,16 +33,22 @@ int main(int argc, char* argv[]) {
 	stat(sourcefile, &source_stat);
 	int source = open(sourcefile, O_RDONLY);
 	void* source_map = mmap(NULL, source_stat.st_size, PROT_READ, MAP_PRIVATE, source, 0);
+	if (source_map == MAP_FAILED) {
+		fprintf(stderr, "Couldn't read input: %s\n", strerror(errno));
+		return 1;
+	}
 
 	char* elffile = argv[2];
 	int elf = open(elffile, O_RDWR | O_CREAT, 0775);
 	long long maplen = sizeof(Elf64_Ehdr) + phnum*sizeof(Elf64_Phdr) + strlen(interp_string) + source_stat.st_size;
+
 	int error = ftruncate(elf, maplen);
 	if (error) {
 		fprintf(stderr, "Couldn't resize file: %s\n", strerror(errno));
+		return 1;
 	}
-	void* map = mmap(NULL, maplen, PROT_READ | PROT_WRITE, MAP_SHARED, elf, 0);
 
+	void* map = mmap(NULL, maplen, PROT_READ | PROT_WRITE, MAP_SHARED, elf, 0);
 	if (map == MAP_FAILED) {
 		fprintf(stderr, "Map failed: %s\n", strerror(errno));
 		return 1;
@@ -51,7 +57,6 @@ int main(int argc, char* argv[]) {
 	unsigned long base_addr = 0x400000; // not sure why, but this seems to be the standard
 
 	// fill header
-	// todo: use autotools to avoid hardcoding machine type etc.
 	Elf64_Ehdr* header = (Elf64_Ehdr*)map;
 	header->e_ident[EI_MAG0] = ELFMAG0;
 	header->e_ident[EI_MAG1] = ELFMAG1;

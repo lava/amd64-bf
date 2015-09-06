@@ -1,6 +1,6 @@
 .PHONY: clean
 
-CFLAGS = -g -O0
+CFLAGS = -g -O2
 
 run: hello.elf ld-bf.so
 	./hello.elf
