@@ -37,7 +37,10 @@ int main(int argc, char* argv[]) {
 	char* elffile = argv[2];
 	int elf = open(elffile, O_RDWR | O_CREAT, 0775);
 	long long maplen = sizeof(Elf64_Ehdr) + phnum*sizeof(Elf64_Phdr) + strlen(interp_string) + source_stat.st_size;
-	ftruncate(elf, maplen); // todo: error checking
+	int error = ftruncate(elf, maplen);
+	if (error) {
+		fprintf(stderr, "Couldn't resize file: %s\n", strerror(errno));
+	}
 	void* map = mmap(NULL, maplen, PROT_READ | PROT_WRITE, MAP_SHARED, elf, 0);
 
 	if (map == MAP_FAILED) {
@@ -65,10 +68,10 @@ int main(int argc, char* argv[]) {
 	header->e_shoff = 0;
 	header->e_shentsize = sizeof(Elf64_Shdr);
 	header->e_shnum = 0;
-
 	header->e_phoff = sizeof(Elf64_Ehdr);
 	header->e_phentsize = sizeof(Elf64_Phdr);
 	header->e_phnum = phnum;
+
 
 	Elf64_Phdr* phdr   = (Elf64_Phdr*)(map + header->e_phoff + 0*header->e_phentsize);
 	phdr->p_type = PT_PHDR;
@@ -77,7 +80,6 @@ int main(int argc, char* argv[]) {
 	phdr->p_filesz = phnum*sizeof(Elf64_Phdr);
 	phdr->p_vaddr = base_addr + phdr->p_offset;
 	phdr->p_memsz  = phdr->p_filesz;
-
 
 	Elf64_Phdr* interp = (Elf64_Phdr*)(map + header->e_phoff + 1*header->e_phentsize);
 	interp->p_type = PT_INTERP; // INTERP must precede any loadable segment header
@@ -103,7 +105,6 @@ int main(int argc, char* argv[]) {
 	data->p_memsz  = data->p_filesz;
 	data->p_vaddr = base_addr;
 
-
 	Elf64_Phdr* stack  = (Elf64_Phdr*)(map + header->e_phoff + 4*header->e_phentsize);
 	stack->p_type = PT_GNU_STACK;
 	stack->p_flags = PF_R | PF_W;
@@ -112,9 +113,10 @@ int main(int argc, char* argv[]) {
 	stack->p_vaddr = 0; 
 	stack->p_memsz = 0;
 
+
 	strncpy(map + interp->p_offset, interp_string, interp->p_filesz);
 	memcpy (    map + bf->p_offset,    source_map,     bf->p_filesz);
 	header->e_entry = bf->p_vaddr;
 
-	munmap(map, maplen);
+	return 0;
 }

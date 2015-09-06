@@ -1,18 +1,23 @@
 .PHONY: clean
 
-CXX = gcc
-CXXFLAGS = -std=gnu11
+CFLAGS = -g -O0
 
 run: hello.elf ld-bf.so
 	./hello.elf
 
-# The dynamic loader *must* be relocatable, or it will/can
+start.o: start.S
+	$(CC) $(CFLAGS) $^ -c -o $@
+
+interp.o: interp.c
+	$(CC) $(CFLAGS) -std=gnu11 -nostdlib -fPIC -m64 $^ -c -o $@
+
+# The dynamic loader *must* be relocatable, or it can/will
 # overwrite the interpretee data with its own memory image
-ld-bf.so: start.S interp.c
-	$(CXX) $(CXXFLAGS) -fPIC -shared -nostdlib -m64 -ggdb $^ -o $@
+ld-bf.so: start.o interp.o
+	$(LD) $(LDFLAGS) -nostdlib -shared $^ -o $@
 
 bold: bold.c
-	$(CXX) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@
 
 hello.elf: bold hello.bf
 	./bold hello.bf $@

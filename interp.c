@@ -19,7 +19,7 @@ static void cmd_write()
 		"syscall\n"
 		: 
 		: [write]"r"(sys_write), [addr]"r"(sp), [fd]"r"(fd), [count]"r"(count)
-		: "rsi", "rdi", "rax", "rdx");
+		: "rsi", "rdi", "rax", "rdx", "rcx", "r11");
 
 	++ip;
 }
@@ -37,7 +37,7 @@ static void cmd_read()
 		"syscall\n"
 		: 
 		: [read]"r"(sys_read), [addr]"r"(&buf), [fd]"r"(fd), [count]"r"(count)
-		: "rsi", "rdi", "rax", "rdx");
+		: "rsi", "rdi", "rax", "rdx", "rcx", "r11");
 
 	*sp = buf; // can't let the syscall write directly to sp because we want to reset the whole cell
 	++ip;
@@ -58,7 +58,7 @@ static void cmd_syscall()
 		"mov %%rax, %[result]"
 		: [result]"=r"(result)
 		: [sys_nr]"rm"(sys_nr), [rdi]"rm"(rdi), [rsi]"rm"(rsi), [rdx]"rm"(rdx), [r10]"rm"(r10), [r8]"rm"(r8), [r9]"rm"(r9)
-		: "rax", "rdi", "rsi", "rdx", "r10", "r9", "r8"
+		: "rax", "rdi", "rsi", "rdx", "r10", "r9", "r8", "rcx", "r11" // ABI: "The kernel destroys registers %rcx and %r11."
 		);
 
 	*sp = result;
@@ -177,8 +177,6 @@ long start(void** stack) {
 	void* base = 0;
 	void* entry = 0;
 
-	uint64_t fd;
-
 	int finished = 0;
 	while (!finished) {
 		switch (auxv->a_type) {
@@ -196,15 +194,9 @@ long start(void** stack) {
 			base = (void*)auxv->a_un.a_val;
 			break;
 
-		case AT_EXECFD:
-			fd = auxv->a_un.a_val;
-			sp = &fd;
-			cmd_write();
-			break;
-
-		case AT_ENTRY:
-
 		// Collecting legal values in case they are needed later:
+		case AT_EXECFD:
+		case AT_ENTRY:
 		case AT_IGNORE:
 		case AT_PHENT:
 		case AT_PAGESZ:
@@ -225,6 +217,7 @@ long start(void** stack) {
 		++auxv;
 	}
 
+	// todo: read program from 
 
 
 	unsigned char* tape_begin = 0;
