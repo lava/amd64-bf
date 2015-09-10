@@ -1,0 +1,5 @@
+amd64-bf (0.1.0) vivid; urgency=low
+
+  * Initial release.
+
+ -- Benno Evers <benno@grothendieck.local>  Thu, 10 Sep 2015 01:44:48 +0200

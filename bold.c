@@ -17,8 +17,14 @@
  *   Code
  */
 
-//const char* interp_string = "/lib64/ld-bf.so";
-const char* interp_string = "./ld-bf.so";
+#ifndef LDPATH
+#define LDPATH /lib64/ld-bf.so
+#endif
+
+#define MACRO_STR_IMPL(x) #x
+#define MACRO_STR(x) MACRO_STR_IMPL(x)
+
+const char* interp_string = MACRO_STR(LDPATH);
 
 int main(int argc, char* argv[]) {
 	if (argc < 3) {

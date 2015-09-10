@@ -44,9 +44,16 @@ A: By reusing library code, bugs and bad design choices made by the library impl
    propagated into user code. The only way to ensure bug-free and maintainable code is
    to write everything from scratch.
 
+### Q: I want to do crypto though, surely I should not implement that myself?
+
+A: That's right. Fortunately, this package makes loading of libraries very
+easy. Just write a small C++-wrapper to call the desired function,
+implement a C++-compiler and linker to create an executable file, and
+call that binary using `execv()`.
+
 ### Q: What are the benefits of having a dynamic loader that doesn't do relocations and works completely statically?
 
-A: Please, take a look at this picture of a cute kitten:
+A: Before I can answer this, I need cover some prerequisites...hey, look at this cute kitten over there!
 
 ![](./kitty.jpg)
 
@@ -59,8 +66,6 @@ A: Please, take a look at this picture of a cute kitten:
 * Thread-local storage isn't properly implemented (yet?)
 
 * `bold` should probably support a `-static` flag. Or any flag at all.
-
-* An `install` target is still missing. An autotools-based configury seems like a good match ;)
 
 * I will be very impressed if someone manages to write a program that
   properly daemonizes and accepts incoming connections on a socket.
