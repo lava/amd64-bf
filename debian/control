@@ -1,0 +1,17 @@
+Source: amd64-bf
+Maintainer: No One So Far <maintainer@example.org>
+Section: devel
+Priority: standard
+Standards-Version: 3.9.5
+Build-Depends: debhelper
+
+Package: amd64-bf
+Architecture: amd64
+Section: devel
+Priority: standard
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Dynamic loader and binutils for brainfuck (amd64 version)
+ Pure brainfuck isn't enough for you? 
+ You want to spawn threads, access the network or do real-time graphics?
+ .
+ Well, here's the brainfuck for you.
