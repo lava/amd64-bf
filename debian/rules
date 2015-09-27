@@ -1,4 +1,7 @@
 #!/usr/bin/make -f
 
+override_dh_fixperms:
+	dh_fixperms -Xlib64/ld-bf.so.0
+
 %:
 	dh $@
