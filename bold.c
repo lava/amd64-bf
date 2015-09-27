@@ -15,6 +15,7 @@
  *   Segment Header Table
  *   Interp string
  *   Code
+ *   Notes
  */
 
 #ifndef LDPATH
@@ -32,7 +33,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	int phnum = 5;
+	int phnum = 6;
 
 	char* sourcefile = argv[1];
 	struct stat source_stat;
@@ -124,9 +125,33 @@ int main(int argc, char* argv[]) {
 	stack->p_vaddr = 0; 
 	stack->p_memsz = 0;
 
+	size_t note_size = sizeof(Elf64_Nhdr) + 5*sizeof(int32_t);
+
+	Elf64_Phdr* note = (Elf64_Phdr*)(map+header->e_phoff + 5*header->e_phentsize);
+	note->p_type = PT_NOTE;
+	note->p_flags = 0;
+	note->p_offset = bf->p_offset + bf->p_filesz;
+	note->p_filesz = note_size;
+	note->p_vaddr = 0;
+	note->p_memsz = 0;
+	
+	Elf64_Nhdr* abi_note = malloc(note_size);
+	abi_note->n_namesz = 4;
+	abi_note->n_descsz = 16;
+	abi_note->n_type = 1;
+	int32_t* note_data = (int32_t*)(abi_note+1);
+	strcpy((char*)note_data, "GNU");
+	// Set earliest compatible kernel version.
+	// The produced binaries could probably be used on anything, but 3.19.0 is the
+	// only that was tested so far.
+	note_data[1] = 0;
+	note_data[2] = 3;
+	note_data[3] = 19;
+	note_data[4] = 0; 
 
 	strncpy(map + interp->p_offset, interp_string, interp->p_filesz);
-	memcpy (    map + bf->p_offset,    source_map,     bf->p_filesz);
+	memcpy (map + bf->p_offset,     source_map,    bf->p_filesz);
+	memcpy (map + note->p_offset,   abi_note,      note->p_filesz);
 	header->e_entry = bf->p_vaddr;
 
 	return 0;
